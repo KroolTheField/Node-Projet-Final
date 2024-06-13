@@ -1,5 +1,6 @@
 // controllers/bookController.js
 const bookModel = require('../models/bookModel');
+const authorModel = require('../models/authorModel');
 
 const getAllBooks = (req, res) => {
     const books = bookModel.getAllBooks();
@@ -17,11 +18,16 @@ const getBookById = (req, res) => {
 };
 
 const addBook = (req, res) => {
-    const { title, author, year } = req.body;
+    const { title, authorId, year } = req.body;
+    const author = authorModel.getAuthorById(authorId);
+    if (!author) {
+        return res.status(400).json({ message: "Author not found" });
+    }
     const newBook = {
         id: Date.now().toString(),
         title,
-        author,
+        authorId,
+        author: author.name, // Ajout du nom de l'auteur pour une meilleure lisibilité
         year
     };
     bookModel.addBook(newBook);
@@ -30,11 +36,15 @@ const addBook = (req, res) => {
 
 const updateBook = (req, res) => {
     const id = req.params.id;
-    const { title, author, year } = req.body;
+    const { title, authorId, year } = req.body;
+    const author = authorModel.getAuthorById(authorId);
+    if (!author) {
+        return res.status(400).json({ message: "Author not found" });
+    }
     const updatedBook = {
-        id,
         title,
-        author,
+        authorId,
+        author: author.name,
         year
     };
     const success = bookModel.updateBook(id, updatedBook);

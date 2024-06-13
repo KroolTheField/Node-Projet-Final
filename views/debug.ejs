@@ -1,14 +1,207 @@
-<!-- views/debug.ejs -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Debug</title>
+    <title>Gestion de la Bibliothèque</title>
+    <style>
+        /* Styles pour la mise en page */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #444;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            display: inline;
+            margin-right: 20px;
+        }
+
+        section {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        form input[type="text"],
+        form input[type="email"],
+        form input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        form input[type="submit"] {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+
+        form input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        #main {
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Debug View</h1>
-    <h2>Books</h2>
-    <pre><%= JSON.stringify(books, null, 2) %></pre>
+    <header>
+        <h1>Gestion de la Bibliothèque</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="#users">Users</a></li>
+            <li><a href="#authors">Authors</a></li>
+            <li><a href="#books">Books</a></li>
+            <li><a href="#borrowed">Borrowed Books</a></li>
+        </ul>
+    </nav>
+    <main id="main">
+        <section id="users">
+            <h2>Users</h2>
+            <!-- Tableau pour afficher les utilisateurs -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Country</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table">
+                    <!-- Les données des utilisateurs seront affichées ici -->
+                    <% users.forEach(user=> { %>
+                        <tr>
+                            <td>
+                                <%= user.id %>
+                            </td>
+                            <td>
+                                <%= user.name %>
+                            </td>
+                            <td>
+                                <%= user.email %>
+                            </td>
+                            <td>
+                                <%= user.country %>
+                            </td>
+                        </tr>
+                        <% }); %>
+                </tbody>
+            </table>
+            <!-- Formulaire pour ajouter un utilisateur -->
+            <h3>Add User</h3>
+            <form id="add-user-form">
+                <input type="text" name="name" placeholder="Name" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="text" name="country" placeholder="Country" required>
+                <input type="submit" value="Add User">
+            </form>
+        </section>
+        <section id="authors">
+            <!-- Section pour les auteurs -->
+            <h2>Authors</h2>
+            <!-- Tableau pour afficher les auteurs -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Country</th>
+                    </tr>
+                </thead>
+                <tbody id="authors-table">
+                    <!-- Les données des auteurs seront affichées ici -->
+                    <% authors.forEach(author=> { %>
+                        <tr>
+                            <td>
+                                <%= author.id %>
+                            </td>
+                            <td>
+                                <%= author.name %>
+                            </td>
+                            <td>
+                                <%= author.country %>
+                            </td>
+                        </tr>
+                        <% }); %>
+                </tbody>
+            </table>
+            <!-- Formulaire pour ajouter un auteur -->
+            <h3>Add Author</h3>
+            <form id="add-author-form">
+                <input type="text" name="name" placeholder="Name" required>
+                <input type="text" name="country" placeholder="Country" required>
+                <input type="submit" value="Add Author">
+            </form>
+        </section>
+
+        <section id="books">
+            <!-- Section pour les livres -->
+            <!-- Tableau pour afficher les livres -->
+            <!-- Formulaire pour ajouter un livre -->
+        </section>
+        <section id="borrowed">
+            <!-- Section pour les livres empruntés -->
+            <!-- Tableau pour afficher les livres empruntés -->
+            <!-- Formulaire pour ajouter un livre emprunté -->
+        </section>
+    </main>
+
+    <script>
+        // JavaScript pour interagir avec l'API et mettre à jour l'affichage
+        // Fonctions pour récupérer et afficher les données
+        // Fonctions pour ajouter, modifier et supprimer des éléments
+    </script>
 </body>
+
 </html>

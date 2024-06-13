@@ -2,39 +2,61 @@
 const fs = require('fs');
 const path = require('path');
 
-const dataFilePath = path.join(__dirname, '../data/books.json');
+const booksFilePath = path.join(__dirname, '../data/books.json');
 
 const getAllBooks = () => {
-    const booksData = fs.readFileSync(dataFilePath, 'utf-8');
-    return JSON.parse(booksData);
+    try {
+        const booksData = fs.readFileSync(booksFilePath, 'utf-8');
+        return JSON.parse(booksData);
+    } catch (error) {
+        console.error('Error reading books data:', error);
+        return [];
+    }
 };
 
 const getBookById = (id) => {
-    const booksData = getAllBooks();
-    return booksData.find(book => book.id === id);
+    const books = getAllBooks();
+    return books.find(book => book.id === id);
 };
 
-const addBook = (book) => {
-    const booksData = getAllBooks();
-    booksData.push(book);
-    fs.writeFileSync(dataFilePath, JSON.stringify(booksData, null, 2));
+const addBook = (newBook) => {
+    try {
+        const books = getAllBooks();
+        books.push(newBook);
+        fs.writeFileSync(booksFilePath, JSON.stringify(books, null, 2));
+        return true;
+    } catch (error) {
+        console.error('Error adding book:', error);
+        return false;
+    }
 };
 
 const updateBook = (id, updatedBook) => {
-    const booksData = getAllBooks();
-    const index = booksData.findIndex(book => book.id === id);
-    if (index !== -1) {
-        booksData[index] = updatedBook;
-        fs.writeFileSync(dataFilePath, JSON.stringify(booksData, null, 2));
-        return true;
+    try {
+        const books = getAllBooks();
+        const index = books.findIndex(book => book.id === id);
+        if (index !== -1) {
+            books[index] = { id, ...updatedBook };
+            fs.writeFileSync(booksFilePath, JSON.stringify(books, null, 2));
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error updating book:', error);
+        return false;
     }
-    return false;
 };
 
 const deleteBook = (id) => {
-    const booksData = getAllBooks();
-    const filteredBooks = booksData.filter(book => book.id !== id);
-    fs.writeFileSync(dataFilePath, JSON.stringify(filteredBooks, null, 2));
+    try {
+        const books = getAllBooks();
+        const updatedBooks = books.filter(book => book.id !== id);
+        fs.writeFileSync(booksFilePath, JSON.stringify(updatedBooks, null, 2));
+        return true;
+    } catch (error) {
+        console.error('Error deleting book:', error);
+        return false;
+    }
 };
 
 module.exports = {
