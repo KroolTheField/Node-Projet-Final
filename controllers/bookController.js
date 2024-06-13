@@ -1,56 +1,70 @@
-const Book = require('../models/book');
+// controllers/bookController.js
+const bookModel = require('../models/bookModel');
+const authorModel = require('../models/authorModel');
 
-exports.getAllBooks = async (req, res) => {
-  try {
-    const books = await Book.find().populate('genre');
+const getAllBooks = (req, res) => {
+    const books = bookModel.getAllBooks();
     res.json(books);
-  } catch (err) {
-    res.status(500).send('Server Error');
-  }
 };
 
-exports.getBookById = async (req, res) => {
-  try {
-    const book = await Book.findById(req.params.id).populate('genre');
-    if (!book) {
-      return res.status(404).json({ msg: 'Book not found' });
+const getBookById = (req, res) => {
+    const id = req.params.id;
+    const book = bookModel.getBookById(id);
+    if (book) {
+        res.json(book);
+    } else {
+        res.status(404).json({ message: "Book not found" });
     }
-    res.json(book);
-  } catch (err) {
-    res.status(500).send('Server Error');
-  }
 };
 
-exports.createBook = async (req, res) => {
-  try {
-    const newBook = new Book(req.body);
-    const book = await newBook.save();
-    res.json(book);
-  } catch (err) {
-    res.status(500).send('Server Error');
-  }
-};
-
-exports.updateBook = async (req, res) => {
-  try {
-    const book = await Book.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!book) {
-      return res.status(404).json({ msg: 'Book not found' });
+const addBook = (req, res) => {
+    const { title, authorId, year } = req.body;
+    const author = authorModel.getAuthorById(authorId);
+    if (!author) {
+        return res.status(400).json({ message: "Author not found" });
     }
-    res.json(book);
-  } catch (err) {
-    res.status(500).send('Server Error');
-  }
+    const newBook = {
+        id: Date.now().toString(),
+        title,
+        authorId,
+        author: author.name, // Ajout du nom de l'auteur pour une meilleure lisibilité
+        year
+    };
+    bookModel.addBook(newBook);
+    res.status(201).json(newBook);
 };
 
-exports.deleteBook = async (req, res) => {
-  try {
-    const book = await Book.findByIdAndDelete(req.params.id);
-    if (!book) {
-      return res.status(404).json({ msg: 'Book not found' });
+const updateBook = (req, res) => {
+    const id = req.params.id;
+    const { title, authorId, year } = req.body;
+    const author = authorModel.getAuthorById(authorId);
+    if (!author) {
+        return res.status(400).json({ message: "Author not found" });
     }
-    res.json({ msg: 'Book removed' });
-  } catch (err) {
-    res.status(500).send('Server Error');
-  }
+    const updatedBook = {
+        title,
+        authorId,
+        author: author.name,
+        year
+    };
+    const success = bookModel.updateBook(id, updatedBook);
+    if (success) {
+        res.json(updatedBook);
+    } else {
+        res.status(404).json({ message: "Book not found" });
+    }
+};
+
+const deleteBook = (req, res) => {
+    const id = req.params.id;
+    bookModel.deleteBook(id);
+    res.json({ message: "Book deleted successfully" });
+};
+
+module.exports = {
+    getAllBooks,
+    getBookById,
+    addBook,
+    updateBook,
+    deleteBook
 };

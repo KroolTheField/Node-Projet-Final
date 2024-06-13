@@ -1,56 +1,44 @@
+// app.js
 const express = require('express');
-const bodyParser = require('body-parser');
-const connectDB = require('./config/database');
-const bookRoutes = require('./routes/bookRoutes');
-const userRoutes = require('./routes/userRoutes');
-const borrowRoutes = require('./routes/borrowRoutes');
-const genreRoutes = require('./routes/genreRoutes');
-const logMiddleware = require('./middlewares/logMiddleware');
-const authMiddleware = require('./middlewares/authMiddleware');
-const path = require('path');
-
 const app = express();
+const fs = require('fs');
+const bookRoutes = require('./routes/bookRoutes');
+const authorRoutes = require('./routes/authorRoutes');
+const userRoutes = require('./routes/userRoutes');
 
-// Connexion à la base de données
-connectDB();
-
-// Middlewares
-app.use(bodyParser.json());
-app.use(logMiddleware);
-app.use(authMiddleware);
-
-// Vues EJS
+// Définir EJS comme moteur de modèle par défaut
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
 
-// Routes
-app.use('/api/books', bookRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/borrows', borrowRoutes);
-app.use('/api/genres', genreRoutes);
+app.use(express.json());
 
-app.get('/debug/books', async (req, res) => {
-  const books = await require('./models/book').find().populate('genre');
-  res.render('books', { books });
+// Middleware for logging requests
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
 });
 
-app.get('/debug/users', async (req, res) => {
-  const users = await require('./models/user').find();
-  res.render('users', { users });
+// Book routes
+app.use('/books', bookRoutes);
+
+// Author routes
+app.use('/authors', authorRoutes);
+
+// User routes
+app.use('/users', userRoutes);
+
+// Route for debug view
+app.get('/debug', (req, res) => {
+    // Read data from JSON files
+    const users = JSON.parse(fs.readFileSync('./data/users.json'));
+    const books = JSON.parse(fs.readFileSync('./data/books.json'));
+    const authors = JSON.parse(fs.readFileSync('./data/authors.json'));
+    // Extract borrowed books from users
+    const borrowedBooks = users.flatMap(user => user.borrowedBooks || []); // Assuming borrowed books are stored under 'borrowedBooks' key in each user object
+    // Render debug view
+    res.render('debug', { users, books, authors, borrowedBooks }); // Fournir les données des livres empruntés à la vue
 });
 
-app.get('/debug/borrows', async (req, res) => {
-  const borrows = await require('./models/borrow').find().populate('user').populate('book');
-  res.render('borrows', { borrows });
-});
-
-app.get('/debug/genres', async (req, res) => {
-  const genres = await require('./models/genre').find();
-  res.render('genres', { genres });
-});
-
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
-  

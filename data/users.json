@@ -1,0 +1,40 @@
+[
+  {
+    "id": "1",
+    "name": "Alice",
+    "email": "alice@example.com",
+    "country": "France",
+    "borrowedBooks": []
+  },
+  {
+    "id": "2",
+    "name": "Bob",
+    "email": "bob@example.com",
+    "country": "United States",
+    "borrowedBooks": [
+      {
+        "bookId": "1",
+        "borrowDate": "2024-06-25",
+        "returnDate": "2024-07-25"
+      },
+      {
+        "bookId": "2",
+        "borrowDate": "2024-06-10",
+        "returnDate": "2024-07-10"
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "name": "Charlie",
+    "email": "charlie@example.com",
+    "country": "Canada",
+    "borrowedBooks": [
+      {
+        "bookId": "3",
+        "borrowDate": "2024-06-15",
+        "returnDate": "2024-07-15"
+      }
+    ]
+  }
+]
