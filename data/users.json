@@ -4,13 +4,7 @@
     "name": "Alice",
     "email": "alice@example.com",
     "country": "France",
-    "borrowedBooks": [
-      {
-        "bookId": "1718278187256",
-        "borrowDate": "2024-06-20",
-        "returnDate": "2024-07-20"
-      }
-    ]
+    "borrowedBooks": []
   },
   {
     "id": "2",
@@ -42,5 +36,13 @@
         "returnDate": "2024-07-15"
       }
     ]
+  },
+  {
+    "id": "1718284132767",
+    "borrowedBooks": []
+  },
+  {
+    "id": "1718284263753",
+    "borrowedBooks": []
   }
 ]

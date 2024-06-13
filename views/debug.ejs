@@ -42,6 +42,16 @@
             margin-right: 20px;
         }
 
+        nav a {
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
         section {
             padding: 20px;
         }
@@ -87,8 +97,14 @@
         }
 
         #main {
-            display:grid;
+            display: grid;
             grid-template-columns: 1fr 1fr;
+        }
+
+        @media screen and (orientation:portrait) {
+            #main {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -116,6 +132,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Country</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="users-table">
@@ -133,6 +150,9 @@
                             </td>
                             <td>
                                 <%= user.country %>
+                            </td>
+                            <td>
+                                <button onclick="deleteUser('<%= user.id %>')">Delete</button>
                             </td>
                         </tr>
                         <% }); %>
@@ -157,6 +177,7 @@
                         <th>ID</th>
                         <th>Name</th>
                         <th>Country</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="authors-table">
@@ -172,6 +193,9 @@
                             <td>
                                 <%= author.country %>
                             </td>
+                            <td>
+                                <button onclick="deleteAuthor('<%= author.id %>')">Delete</button>
+                            </td>
                         </tr>
                         <% }); %>
                 </tbody>
@@ -184,24 +208,450 @@
                 <input type="submit" value="Add Author">
             </form>
         </section>
-
         <section id="books">
             <!-- Section pour les livres -->
+            <h2>Books</h2>
             <!-- Tableau pour afficher les livres -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Year</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="books-table">
+                    <!-- Les données des livres seront affichées ici -->
+                    <% books.forEach(book=> {
+                        const author = authors.find(author => author.id === book.authorId);
+                        %>
+                        <tr>
+                            <td>
+                                <%= book.id %>
+                            </td>
+                            <td>
+                                <%= book.title %>
+                            </td>
+                            <td>
+                                <%= author ? author.name : 'Unknown Author' %>
+                            </td>
+                            <td>
+                                <%= book.year %>
+                            </td>
+                            <td>
+                                <button onclick="deleteBook('<%= book.id %>')">Delete</button>
+                            </td>
+                        </tr>
+                        <% }); %>
+                </tbody>
+            </table>
             <!-- Formulaire pour ajouter un livre -->
+            <h3>Add Book</h3>
+            <form id="add-book-form">
+                <input type="text" name="title" placeholder="Title" required>
+                <input type="text" name="authorId" placeholder="Author ID" required>
+                <input type="text" name="year" placeholder="Year" required>
+                <input type="submit" value="Add Book">
+            </form>
         </section>
         <section id="borrowed">
             <!-- Section pour les livres empruntés -->
+            <h2>Borrowed Books</h2>
             <!-- Tableau pour afficher les livres empruntés -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>User Name</th>
+                        <th>Book ID</th>
+                        <th>Book Title</th>
+                        <th>Borrow Date</th>
+                        <th>Return Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="borrowed-books-table">
+                    <!-- Les données des livres empruntés seront affichées ici -->
+                    <% users.forEach(user=> {
+                        user.borrowedBooks.forEach(borrowedBook => {
+                        const book = books.find(book => book.id === borrowedBook.bookId);
+                        %>
+                        <tr>
+                            <td>
+                                <%= user.id %>
+                            </td>
+                            <td>
+                                <%= user.name %>
+                            </td>
+                            <td>
+                                <%= borrowedBook.bookId %>
+                            </td>
+                            <td>
+                                <%= book ? book.title : 'Unknown Book' %>
+                            </td>
+                            <td>
+                                <%= borrowedBook.borrowDate %>
+                            </td>
+                            <td>
+                                <%= borrowedBook.returnDate %>
+                            </td>
+                            <td>
+                                <button
+                                    onclick="deleteBorrowedBook('<%= user.id %>', '<%= borrowedBook.bookId %>')">Delete</button>
+                            </td>
+                        </tr>
+                        <% }); }); %>
+                </tbody>
+            </table>
             <!-- Formulaire pour ajouter un livre emprunté -->
+            <h3>Add Borrowed Book</h3>
+            <form id="add-borrowed-book-form">
+                <input type="text" name="userId" placeholder="User ID" required>
+                <input type="text" name="bookId" placeholder="Book ID" required>
+                <input type="date" name="borrowDate" placeholder="Borrow Date" required>
+                <input type="date" name="returnDate" placeholder="Return Date" required>
+                <input type="submit" value="Add Borrowed Book">
+            </form>
         </section>
     </main>
 
     <script>
-        // JavaScript pour interagir avec l'API et mettre à jour l'affichage
-        // Fonctions pour récupérer et afficher les données
-        // Fonctions pour ajouter, modifier et supprimer des éléments
+        document.addEventListener("DOMContentLoaded", function () {
+            const userForm = document.getElementById('add-user-form');
+
+            userForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const formData = new FormData(userForm);
+                const user = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    country: formData.get('country')
+                };
+
+                try {
+                    const response = await fetch('/users', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(user)
+                    });
+
+                    if (response.ok) {
+                        const newUser = await response.json();
+                        addUserToTable(newUser);
+                        userForm.reset();
+                    } else {
+                        console.error('Failed to add user');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            });
+
+            function addUserToTable(user) {
+                const usersTable = document.getElementById('users-table');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.country}</td>
+                    <td><button onclick="deleteUser('${user.id}')">Delete</button></td>
+                `;
+                usersTable.appendChild(row);
+            }
+
+            window.deleteUser = async function (userId) {
+                try {
+                    const response = await fetch(`/users/${userId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        removeUserFromTable(userId);
+                    } else {
+                        console.error('Failed to delete user');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+
+            function removeUserFromTable(userId) {
+                const usersTable = document.getElementById('users-table');
+                const rows = usersTable.getElementsByTagName('tr');
+                for (let row of rows) {
+                    if (row.cells[0].innerText === userId) {
+                        usersTable.removeChild(row);
+                        break;
+                    }
+                }
+            }
+
+
+        });
     </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const authorForm = document.getElementById('add-author-form');
+
+            authorForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const formData = new FormData(authorForm);
+                const author = {
+                    name: formData.get('name'),
+                    country: formData.get('country')
+                };
+
+                try {
+                    const response = await fetch('/authors', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(author)
+                    });
+
+                    if (response.ok) {
+                        const newAuthor = await response.json();
+                        addAuthorToTable(newAuthor);
+                        authorForm.reset();
+                    } else {
+                        console.error('Failed to add author');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            });
+
+            function addAuthorToTable(author) {
+                const authorsTable = document.getElementById('authors-table');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                <td>${author.id}</td>
+                <td>${author.name}</td>
+                <td>${author.country}</td>
+                <td><button onclick="deleteAuthor('${author.id}')">Delete</button></td>
+            `;
+                authorsTable.appendChild(row);
+            }
+
+            window.deleteAuthor = async function (authorId) {
+                try {
+                    const response = await fetch(`/authors/${authorId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        removeAuthorFromTable(authorId);
+                    } else {
+                        console.error('Failed to delete author');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+
+            function removeAuthorFromTable(authorId) {
+                const authorsTable = document.getElementById('authors-table');
+                const rows = authorsTable.getElementsByTagName('tr');
+                for (let row of rows) {
+                    if (row.cells[0].innerText === authorId) {
+                        authorsTable.removeChild(row);
+                        break;
+                    }
+                }
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const bookForm = document.getElementById('add-book-form');
+
+            bookForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const formData = new FormData(bookForm);
+                const book = {
+                    title: formData.get('title'),
+                    authorId: formData.get('authorId'),
+                    year: formData.get('year')
+                };
+
+                try {
+                    const response = await fetch('/books', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(book)
+                    });
+
+                    if (response.ok) {
+                        const newBook = await response.json();
+                        addBookToTable(newBook);
+                        bookForm.reset();
+                    } else {
+                        console.error('Failed to add book');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            });
+
+            function addBookToTable(book) {
+                const booksTable = document.getElementById('books-table');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                <td>${book.id}</td>
+                <td>${book.title}</td>
+                <td>${book.author}</td>
+                <td>${book.year}</td>
+                <td><button onclick="deleteBook('${book.id}')">Delete</button></td>
+            `;
+                booksTable.appendChild(row);
+            }
+
+            window.deleteBook = async function (bookId) {
+                try {
+                    const response = await fetch(`/books/${bookId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        removeBookFromTable(bookId);
+                    } else {
+                        console.error('Failed to delete book');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+
+            function removeBookFromTable(bookId) {
+                const booksTable = document.getElementById('books-table');
+                const rows = booksTable.getElementsByTagName('tr');
+                for (let row of rows) {
+                    if (row.cells[0].innerText === bookId) {
+                        booksTable.removeChild(row);
+                        break;
+                    }
+                }
+            }
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const borrowedBookForm = document.getElementById('add-borrowed-book-form');
+
+            borrowedBookForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const formData = new FormData(borrowedBookForm);
+                const borrowedBook = {
+                    userId: formData.get('userId'),
+                    bookId: formData.get('bookId'),
+                    borrowDate: formData.get('borrowDate'),
+                    returnDate: formData.get('returnDate')
+                };
+
+                try {
+                    // Récupération des informations de l'utilisateur
+                    const responseUser = await fetch(`/users/${borrowedBook.userId}`);
+                    if (!responseUser.ok) {
+                        throw new Error('Failed to get user information');
+                    }
+                    const userData = await responseUser.json();
+
+                    // Ajout de l'emprunt de livre avec les informations complètes
+                    const response = await fetch(`/users/${borrowedBook.userId}/borrowedBooks`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(borrowedBook)
+                    });
+
+                    if (response.ok) {
+                        const newBorrowedBook = await response.json();
+                        newBorrowedBook.userName = userData.name; // Utilisation du nom de l'utilisateur
+                        newBorrowedBook.userId = userData.id;
+                        newBorrowedBook.bookTitle = await getBookTitleById(borrowedBook.bookId);
+                        addBorrowedBookToTable(newBorrowedBook);
+                        borrowedBookForm.reset();
+                    } else {
+                        console.error('Failed to add borrowed book');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            });
+
+            window.deleteBorrowedBook = async function (userId, bookId) {
+                try {
+                    const response = await fetch(`/users/${userId}/borrowedBooks/${bookId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        removeBorrowedBookFromTable(userId, bookId);
+                    } else {
+                        console.error('Failed to delete borrowed book');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+
+            function addBorrowedBookToTable(borrowedBook) {
+                const borrowedBooksTable = document.getElementById('borrowed-books-table');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                <td>${borrowedBook.userId}</td>
+                <td>${borrowedBook.userName}</td>
+                <td>${borrowedBook.bookId}</td>
+                <td>${borrowedBook.bookTitle}</td>
+                <td>${borrowedBook.borrowDate}</td>
+                <td>${borrowedBook.returnDate}</td>
+                <td><button onclick="deleteBorrowedBook('${borrowedBook.userId}', '${borrowedBook.bookId}')">Delete</button></td>
+            `;
+                borrowedBooksTable.appendChild(row);
+            }
+
+            function removeBorrowedBookFromTable(userId, bookId) {
+                const borrowedBooksTable = document.getElementById('borrowed-books-table');
+                const rows = borrowedBooksTable.getElementsByTagName('tr');
+                for (let row of rows) {
+                    if (row.cells[0].innerText === userId && row.cells[2].innerText === bookId) {
+                        borrowedBooksTable.removeChild(row);
+                        break;
+                    }
+                }
+            }
+
+            async function getBookTitleById(bookId) {
+                try {
+                    const response = await fetch(`/books/${bookId}`);
+                    if (response.ok) {
+                        const bookData = await response.json();
+                        return bookData.title;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+                return 'Unknown Book';
+            }
+        });
+    </script>
+
 </body>
 
 </html>
