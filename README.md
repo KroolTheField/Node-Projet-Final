@@ -13,7 +13,7 @@ Cette API permet de gérer les utilisateurs, les auteurs, les livres et les livr
 1. Clonez le repository GitHub :
 
     ```bash
-    git clone https://github.com/votre_utilisateur/api-bibliotheque.git
+    git clone https://github.com/KroolTheField/Node-Projet-Final.git
     ```
 
 2. Installez les dépendances avec la commande suivante :
